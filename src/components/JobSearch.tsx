@@ -1,84 +1,78 @@
+'use client';
+
 import { useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import JobList from './JobList';
 
 export default function JobSearch() {
-  const [filters, setFilters] = useState({
-    keywords: '',
+  const [searchParams, setSearchParams] = useState({
+    title: '',
     location: '',
-    remote: false,
-    experience: 'any'
+    jobType: '',
+    salary: ''
   });
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle traditional search without OpenAI
+    console.log('Searching with params:', searchParams);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Smart Job Search Assistant
-            </h1>
-            <p className="mt-3 text-lg text-gray-500">
-              Let AI help you find and apply to your next opportunity
-            </p>
-          </div>
-
-          <div className="mt-10">
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <div className="relative flex items-stretch flex-grow">
-                <input
-                  type="text"
-                  className="block w-full rounded-l-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Job title, keywords, or company"
-                  value={filters.keywords}
-                  onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
-                />
-              </div>
-              <div className="relative flex items-stretch flex-grow">
-                <input
-                  type="text"
-                  className="block w-full border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="Location"
-                  value={filters.location}
-                  onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                />
-              </div>
-              <button
-                type="button"
-                className="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500"
-              >
-                <MagnifyingGlassIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                Search
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center space-x-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  checked={filters.remote}
-                  onChange={(e) => setFilters({ ...filters, remote: e.target.checked })}
-                />
-                <span className="ml-2 text-sm text-gray-600">Remote</span>
-              </label>
-
-              <select
-                className="mt-1 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                value={filters.experience}
-                onChange={(e) => setFilters({ ...filters, experience: e.target.value })}
-              >
-                <option value="any">Any Experience</option>
-                <option value="entry">Entry Level</option>
-                <option value="mid">Mid Level</option>
-                <option value="senior">Senior Level</option>
-              </select>
-            </div>
-          </div>
-
-          <JobList />
+    <div className="bg-white p-4 rounded-lg shadow-sm">
+      <form onSubmit={handleSearch} className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+        <div className="flex-1">
+          <input 
+            type="text" 
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            placeholder="Title, skill or company" 
+            value={searchParams.title}
+            onChange={(e) => setSearchParams({ ...searchParams, title: e.target.value })}
+            autoFocus 
+          />
         </div>
-      </div>
+        <div className="flex-1">
+          <input 
+            type="text" 
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            placeholder="Location" 
+            value={searchParams.location}
+            onChange={(e) => setSearchParams({ ...searchParams, location: e.target.value })}
+          />
+        </div>
+        <div className="flex-1">
+          <select 
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            value={searchParams.jobType}
+            onChange={(e) => setSearchParams({ ...searchParams, jobType: e.target.value })}
+          >
+            <option value="">Select Job Type</option>
+            <option value="full-time">Full Time</option>
+            <option value="part-time">Part Time</option>
+            <option value="contract">Contract</option>
+            <option value="remote">Remote</option>
+          </select>
+        </div>
+        <div className="flex-1">
+          <select 
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchParams.salary}
+            onChange={(e) => setSearchParams({ ...searchParams, salary: e.target.value })}
+          >
+            <option value="">Select Salary Range</option>
+            <option value="0-50000">$0 - $50,000</option>
+            <option value="50000-100000">$50,000 - $100,000</option>
+            <option value="100000-150000">$100,000 - $150,000</option>
+            <option value="150000+">$150,000+</option>
+          </select>
+        </div>
+        <button 
+          type="submit"
+          className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Find Job
+        </button>
+      </form>
+      <JobList />
     </div>
   );
 }
