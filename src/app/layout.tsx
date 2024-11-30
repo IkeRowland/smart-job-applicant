@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Smart Job Applicant',
-  description: 'AI-powered job application automation platform',
+  description: 'Find and apply to jobs with AI assistance',
 };
 
 export default function RootLayout({

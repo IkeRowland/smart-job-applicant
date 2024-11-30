@@ -8,7 +8,7 @@ interface Job {
   posted: string;
   isRemote?: boolean;
   applicantReviewTime?: string;
-  logo: string;
+  logo?: string;
 }
 
 interface JobCardProps {
@@ -19,12 +19,14 @@ export default function JobCard({ job }: JobCardProps) {
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="flex">
-        <div className="flex-shrink-0 w-12 h-12 mr-4">
-          <img 
-            src={job.logo} 
-            alt={job.company} 
-            className="w-full h-full object-cover rounded-lg"
-          />
+        <div className="flex-shrink-0 mr-4">
+          {job.logo ? (
+            <img src={job.logo} alt={`${job.company} logo`} className="w-12 h-12 object-contain" />
+          ) : (
+            <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-gray-500 text-lg font-bold">{job.company[0]}</span>
+            </div>
+          )}
         </div>
         <div className="flex-grow">
           <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
