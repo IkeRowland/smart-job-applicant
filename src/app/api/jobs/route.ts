@@ -1,7 +1,67 @@
 import { NextResponse } from 'next/server';
-import { XMLParser } from 'fast-xml-parser';
 
-const RSS_URL = 'https://jobicy.com/?feed=job_feed';
+// Mock data for testing
+const MOCK_JOBS = [
+  {
+    jobTitle: "Senior Frontend Developer",
+    companyName: "TechCorp",
+    jobGeo: "United Kingdom",
+    url: "https://example.com/job1",
+    pubDate: new Date().toISOString(),
+    jobExcerpt: "Looking for an experienced frontend developer with React expertise",
+    jobType: "Full-time",
+    annualSalaryMin: 70000,
+    annualSalaryMax: 90000,
+    salaryCurrency: "GBP",
+    companyLogo: "https://via.placeholder.com/150",
+    jobIndustry: "Software Development",
+    jobLevel: "Senior"
+  },
+  {
+    jobTitle: "Digital Marketing Manager",
+    companyName: "Marketing Pro",
+    jobGeo: "USA",
+    url: "https://example.com/job2",
+    pubDate: new Date().toISOString(),
+    jobExcerpt: "Lead our digital marketing initiatives",
+    jobType: "Full-time",
+    annualSalaryMin: 60000,
+    annualSalaryMax: 80000,
+    salaryCurrency: "USD",
+    companyLogo: "https://via.placeholder.com/150",
+    jobIndustry: "Marketing",
+    jobLevel: "Manager"
+  },
+  {
+    jobTitle: "SEO Specialist",
+    companyName: "Digital Agency",
+    jobGeo: "Remote",
+    url: "https://example.com/job3",
+    pubDate: new Date().toISOString(),
+    jobExcerpt: "Help clients improve their search engine rankings",
+    jobType: "Contract",
+    annualSalaryMin: 50000,
+    salaryCurrency: "USD",
+    companyLogo: "https://via.placeholder.com/150",
+    jobIndustry: "Digital Marketing",
+    jobLevel: "Mid-Level"
+  },
+  {
+    jobTitle: "SEO Content Writer",
+    companyName: "ContentCo",
+    jobGeo: "United Kingdom",
+    url: "https://example.com/job4",
+    pubDate: new Date().toISOString(),
+    jobExcerpt: "Create SEO-optimized content for various clients",
+    jobType: "Part-time",
+    annualSalaryMin: 30000,
+    annualSalaryMax: 40000,
+    salaryCurrency: "GBP",
+    companyLogo: "https://via.placeholder.com/150",
+    jobIndustry: "Content Writing",
+    jobLevel: "Entry Level"
+  }
+];
 
 export async function GET(request: Request) {
   try {
@@ -18,78 +78,37 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build RSS URL with parameters
-    const rssUrl = new URL(RSS_URL);
-    if (query) {
-      rssUrl.searchParams.set('search_keywords', query);
-    }
-    if (location) {
-      rssUrl.searchParams.set('search_region', location);
-    }
+    // Filter jobs based on search criteria
+    const filteredJobs = MOCK_JOBS.filter(job => {
+      const matchesQuery = job.jobTitle.toLowerCase().includes(query.toLowerCase()) ||
+                          job.jobExcerpt.toLowerCase().includes(query.toLowerCase()) ||
+                          job.jobIndustry.toLowerCase().includes(query.toLowerCase());
 
-    console.log('Fetching from URL:', rssUrl.toString());
+      const matchesLocation = !location || 
+                            job.jobGeo.toLowerCase().includes(location.toLowerCase()) ||
+                            job.jobGeo.toLowerCase() === 'remote' ||
+                            (location.toLowerCase() === 'uk' && job.jobGeo.toLowerCase().includes('united kingdom')) ||
+                            (location.toLowerCase() === 'usa' && job.jobGeo.toLowerCase().includes('usa'));
 
-    const response = await fetch(rssUrl.toString(), {
-      headers: {
-        'Accept': 'application/rss+xml, application/xml, text/xml',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
+      return matchesQuery && matchesLocation;
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('RSS Error Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      });
-      throw new Error(`RSS feed responded with status: ${response.status}`);
-    }
-
-    const xmlData = await response.text();
-    const parser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: "@_"
-    });
-    
-    const rssData = parser.parse(xmlData);
-    console.log('RSS Data:', rssData);
-
-    if (!rssData.rss?.channel?.item) {
-      console.error('Invalid RSS Format:', rssData);
-      throw new Error('Invalid RSS feed format');
-    }
-
-    // Ensure items is always an array
-    const items = Array.isArray(rssData.rss.channel.item) 
-      ? rssData.rss.channel.item 
-      : [rssData.rss.channel.item];
-
-    const jobs = items
-      .filter(item => {
-        // Filter jobs based on search criteria
-        const matchesQuery = !query || 
-          item.title?.toLowerCase().includes(query.toLowerCase()) ||
-          item.description?.toLowerCase().includes(query.toLowerCase());
-        
-        const matchesLocation = !location ||
-          item.location?.toLowerCase().includes(location.toLowerCase());
-
-        return matchesQuery && matchesLocation;
-      })
-      .map(item => ({
-        title: item.title || 'Untitled Position',
-        company: item.company || 'Company Not Specified',
-        location: item.location || 'Remote',
-        link: item.link || '#',
-        posted: item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Recently posted',
-        description: item.description || '',
-        jobType: item.jobType || 'Not specified',
-        salary: item.salary || 'Salary not specified',
-        industry: item.category || 'Not specified'
-      }));
-
-    console.log('Transformed jobs:', jobs.length);
+    // Transform jobs to match frontend expectations
+    const jobs = filteredJobs.map(job => ({
+      title: job.jobTitle,
+      company: job.companyName,
+      location: job.jobGeo,
+      link: job.url,
+      posted: new Date(job.pubDate).toLocaleDateString(),
+      description: job.jobExcerpt,
+      jobType: job.jobType,
+      salary: job.annualSalaryMin ? 
+        `${job.annualSalaryMin}${job.annualSalaryMax ? ' - ' + job.annualSalaryMax : '+'} ${job.salaryCurrency}/year` 
+        : 'Salary not specified',
+      companyLogo: job.companyLogo,
+      industry: job.jobIndustry,
+      level: job.jobLevel
+    }));
 
     if (jobs.length === 0) {
       return NextResponse.json(
